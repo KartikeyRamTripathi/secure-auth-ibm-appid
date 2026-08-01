@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Sign-In — IBM Cloud App ID</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="shell">
+    <div class="stage">
+
+      <!-- LEFT: trust-chain visual -->
+      <div class="visual-panel">
+        <div class="brand">
+          <span class="dot"></span> IBM Cloud · App ID
+        </div>
+
+        <div class="headline">
+          <span class="eyebrow">OpenID Connect · OAuth 2.0</span>
+          <h1>Identity handled once, trusted everywhere.</h1>
+          <p>Every sign-in issues a short-lived, signed token — verified before your app ever sees the request.</p>
+        </div>
+
+        <div class="chain">
+          <div class="chain-head">
+            <span>Live Exchange</span>
+            <span class="live">OIDC</span>
+          </div>
+          <div class="nodes">
+            <div class="rail"></div>
+            <div class="node active">
+              <div class="icon">👤</div>
+              <span class="label">User</span>
+            </div>
+            <div class="node key">
+              <div class="icon">🔑</div>
+              <span class="label">App ID</span>
+            </div>
+            <div class="node">
+              <div class="icon">▦</div>
+              <span class="label">Your App</span>
+            </div>
+          </div>
+          <div class="token-line">
+            <span class="ok">● Token verified</span>
+            <span>JWT · RS256</span>
+          </div>
+        </div>
+
+        <div class="trust-facts">
+          <div class="fact">TLS 1.3 encrypted transport</div>
+          <div class="fact">JWKS-verified signed tokens</div>
+          <div class="fact">MFA enforced on this tenant</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: action panel -->
+      <div class="form-panel">
+        <span class="kicker">Secure Access</span>
+        <h2>Welcome back</h2>
+        <p class="sub">Sign in through IBM Cloud App ID — no passwords are stored in this app.</p>
+
+        <% if (error) { %>
+          <div class="alert">Authentication failed. Please try again.</div>
+        <% } %>
+
+        <% if (!configured) { %>
+          <div class="alert alert-warn">
+            IBM App ID credentials aren't configured yet — add them to <code>.env</code> to enable sign-in.
+          </div>
+        <% } %>
+
+        <div class="badge-row">
+          <span class="badge">OAuth 2.0</span>
+          <span class="badge">OpenID Connect</span>
+          <span class="badge">Zero stored passwords</span>
+        </div>
+
+        <a href="/login" class="btn btn-primary">
+          <span>Continue with IBM App ID</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <div class="divider">Why it's secure</div>
+
+        <ul class="feature-list">
+          <li>Redirects to IBM's hosted, encrypted login — Cloud Directory, Google, Facebook & more</li>
+          <li>Tokens are short-lived and cryptographically signed (RS256)</li>
+          <li>Session cookies are httpOnly and rotate on login</li>
+          <li>This app never sees or stores your password</li>
+        </ul>
+      </div>
+
+    </div>
+    <footer class="note">SECURE-AUTH · IBM CLOUD APP ID INTEGRATION</footer>
+  </div>
+</body>
+</html>

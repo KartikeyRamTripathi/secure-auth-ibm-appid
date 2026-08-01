@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Secure App</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="shell">
+    <div class="stage dash-stage">
+
+      <div class="dash-top">
+        <div class="avatar">
+          <% if (picture) { %>
+            <img src="<%= picture %>" alt="avatar" />
+          <% } else { %>
+            <%= name.charAt(0).toUpperCase() %>
+          <% } %>
+        </div>
+        <h1><%= name %></h1>
+        <span class="status-pill"><span class="dot"></span> Session active</span>
+      </div>
+
+      <div class="dash-body">
+        <div class="section-label">Identity — verified by App ID</div>
+        <div class="info-list">
+          <div class="info-row">
+            <span>Email</span>
+            <span><%= email %></span>
+          </div>
+          <div class="info-row">
+            <span>Provider</span>
+            <span><%= identityProvider %></span>
+          </div>
+          <div class="info-row">
+            <span>Subject ID</span>
+            <span><%= subject %></span>
+          </div>
+          <div class="info-row">
+            <span>Auth Method</span>
+            <span>OIDC · IBM App ID</span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-logout">Sign out</a>
+      </div>
+
+    </div>
+    <footer class="note">SECURE-AUTH · IBM CLOUD APP ID INTEGRATION</footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "secure-auth-ibm-appid",
+  "version": "1.0.0",
+  "description": "Secure User Authentication for Web Apps with IBM Cloud App ID",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["ibm-cloud", "app-id", "authentication", "oauth2", "openid-connect", "express"],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "ibmcloud-appid": "^7.0.1",
+    "passport": "^0.7.0",
+    "ejs": "^3.1.10"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
