@@ -1,88 +1,80 @@
-# Secure User Authentication for Web Apps with IBM Cloud App ID
+# Secure Auth with IBM Cloud App ID
 
-A complete, working Node.js + Express application that implements secure user
-authentication using **IBM Cloud App ID** (OAuth 2.0 / OpenID Connect), with
-a custom branded login page, IBM's hosted sign-in screen, and a protected
-dashboard that displays the logged-in user's profile.
+I built this to figure out how IBM Cloud App ID's OAuth 2.0 / OIDC flow
+actually works end to end — a custom login page, IBM's hosted sign-in
+screen, and a dashboard that pulls back the logged-in user's profile.
 
-## Tech Stack
-- Node.js + Express
-- `ibmcloud-appid` (official IBM SDK) + Passport.js — `WebAppStrategy`
-- EJS templates
-- express-session for session management
+No passwords are handled by this app at all — IBM App ID does all of that,
+which is really the whole point of using it.
 
-## Project Structure
+## Stack
+
+Node + Express, `ibmcloud-appid` (IBM's official SDK) wired up through
+Passport's `WebAppStrategy`, EJS for views, and `express-session` for
+keeping people logged in.
+
+## Layout
+
 ```
 project/
-├── server.js              # All routes + App ID/Passport config
+├── server.js         # routes + App ID / Passport setup
 ├── package.json
-├── .env.example            # Copy to .env and fill in your credentials
+├── .env.example      # copy to .env and fill in your own IBM credentials
 ├── views/
-│   ├── login.ejs           # Branded landing/login page
-│   ├── dashboard.ejs       # Protected page, shows user profile
+│   ├── login.ejs
+│   ├── dashboard.ejs
 │   └── error.ejs
-└── public/css/style.css    # Gradient card UI styling
+└── public/css/style.css
 ```
 
-## Step 1 — Create the IBM Cloud App ID service
-1. Log into https://cloud.ibm.com
-2. Catalog → search **"App ID"** → create an instance (Lite plan is free)
-3. Open the instance → **Manage Authentication** → enable **Cloud Directory**
-   (and optionally Google/Facebook if you want social login)
-4. Go to **Identity Providers → Cloud Directory** and make sure
-   "Email verification" / sign-up options are configured how you like
-5. Go to **Authentication Settings** and add a **Redirect URL**:
+## Setting it up
+
+1. Log into [cloud.ibm.com](https://cloud.ibm.com), go to Catalog, and
+   spin up an **App ID** instance (the Lite plan is free).
+2. In the instance, go to **Manage Authentication** and turn on
+   **Cloud Directory** (add Google/Facebook too if you want social login).
+3. Under **Authentication Settings**, add this redirect URL:
    ```
    http://localhost:3000/ibm/cloud/appid/callback
    ```
-   (add your production URL too when you deploy)
-6. Go to **Service Credentials → New Credential** and copy:
-   - `tenantId`
-   - `clientId`
-   - `secret`
-   - `oauthServerUrl`
+4. Under **Service Credentials**, create a new credential and grab
+   `tenantId`, `clientId`, `secret`, and `oauthServerUrl`.
+5. Copy `.env.example` to `.env` and paste those four values in, plus a
+   random string for `SESSION_SECRET`.
+6. Install and run:
+   ```bash
+   npm install
+   npm start
+   ```
+7. Open `http://localhost:3000`.
 
-## Step 2 — Configure the app
-```bash
-cp .env.example .env
-```
-Paste the 4 values above into `.env`, plus a random `SESSION_SECRET`.
+## What happens under the hood
 
-## Step 3 — Install & run
-```bash
-npm install
-npm start
-```
-Open **http://localhost:3000**
+Landing on `/` shows a custom login card. Hitting login kicks off
+Passport's `WebAppStrategy`, which redirects you to IBM's hosted sign-in.
+IBM sends you back to `/ibm/cloud/appid/callback` with an auth code,
+Passport exchanges it for tokens, and a session gets created. From there
+`/dashboard` is gated behind an `ensureAuthenticated` check and reads
+`req.user` for the profile info. `/logout` clears both the local session
+and IBM's SSO cookie via `WebAppStrategy.logout(req)`.
 
-## How the flow works
-1. `/` — custom gradient login card (matches your reference UI)
-2. Click **Login with IBM App ID** → `/login` triggers
-   `passport.authenticate('appid-webapp-strategy')`, redirecting the
-   browser to IBM's hosted, encrypted login page
-3. IBM redirects back to `/ibm/cloud/appid/callback` with an auth code;
-   Passport exchanges it for tokens and creates the session
-4. `/dashboard` (protected by `ensureAuthenticated` middleware) reads
-   `req.user` and displays name, email, identity provider, and subject ID
-5. `/logout` calls `WebAppStrategy.logout(req)` and destroys the local
-   session — this also clears IBM's SSO cookie
+## Notes
 
-## Security notes already implemented
-- No passwords ever touch this app — IBM App ID handles credential storage
-- Session cookies are `httpOnly`, and `secure` automatically turns on when
-  `NODE_ENV=production` (put the app behind HTTPS in production)
-- `/dashboard` and `/api/profile` are guarded by `ensureAuthenticated`
-- `.env` is git-ignored so secrets never get committed
+- Session cookies are `httpOnly`, and `secure` flips on automatically
+  once `NODE_ENV=production` — so put this behind HTTPS if you deploy it.
+- `.env` is git-ignored on purpose; only `.env.example` (placeholder
+  values) is committed.
 
 ## Deploying
-Any Node host works (IBM Cloud Foundry/Kubernetes, Render, Railway, etc.)
-Just set the same environment variables from `.env` in your host's config,
-and remember to add the **production callback URL** to App ID's
-Authentication Settings → Redirect URLs.
 
-## Troubleshooting
-| Problem | Fix |
-|---|---|
-| Redirects to IBM but comes back with an error | Check the redirect URL in App ID dashboard matches `APPID_REDIRECT_URI` **exactly**, including `http/https` and trailing slashes |
-| "Missing environment variables" warning on startup | You haven't filled in `.env` yet — see Step 2 |
-| Login loops back to `/` | Session cookie isn't persisting — check `SESSION_SECRET` is set and, if deployed behind a proxy, add `app.set('trust proxy', 1)` |
+Works on any Node host — IBM Cloud, Render, Railway, whatever. Just set
+the same env vars from `.env` on the host, and don't forget to add the
+production callback URL to App ID's redirect list too.
+
+## Common snags
+
+Redirect coming back with an error usually means the redirect URL in the
+App ID dashboard doesn't match `APPID_REDIRECT_URI` exactly (http vs
+https, trailing slash, etc). If login just loops back to `/`, the session
+cookie probably isn't persisting — check `SESSION_SECRET` is actually set,
+and if you're behind a reverse proxy, add `app.set('trust proxy', 1)`.
